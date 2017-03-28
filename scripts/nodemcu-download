@@ -1,0 +1,33 @@
+#!/usr/bin/env expect
+set dst_name [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set src_name [lindex $argv 3]
+set timeout -1
+
+spawn nc $host $port
+
+send_user "Connecting...\n"
+expect "Welcome"
+send "\n"
+expect "> "
+
+send_user "Downloading...\n"
+send "do\n"
+expect ">> "
+send "local stat = file.stat(\"$src_name\")\n"
+expect ">> "
+send "local f = file.open(\"$src_name\", \"r\")\n"
+expect ">> "
+send "print(f:read(stat.size))\n"
+expect ">> "
+send "f:close()\n"
+expect ">> "
+send "end\n"
+expect -indices -re "\r\n(.*)\r\n\r\n> " {
+	set chan [open $dst_name w]
+	puts $chan $expect_out(1,string)
+	close $chan
+	exec -ignorestderr dos2unix $dst_name
+}
+send_user "Done.\n"

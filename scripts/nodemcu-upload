@@ -1,0 +1,24 @@
+#!/usr/bin/env expect
+set src_name [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set dst_name [lindex $argv 3]
+set dir [exec dirname $argv0]
+set code [exec lua5.3 $dir/upload.lua $src_name $dst_name]
+set lines [split $code "\n"]
+set timeout -1
+
+spawn nc $host $port
+
+send_user "Connecting...\n"
+expect "Welcome"
+send "\n"
+expect "> "
+
+send_user "Uploading...\n"
+foreach line $lines {
+	send "$line\n"
+	expect "> "
+}
+
+send_user "Done.\n"
