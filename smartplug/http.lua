@@ -25,6 +25,8 @@ srv:listen(80, function(conn)
 			else
 				conn:send("\non\n")
 			end
+		else
+			conn:close()
 		end
 	conn:on("sent", function(conn)
 		conn:close()
